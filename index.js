@@ -36,18 +36,42 @@ Blog.init({
     modelName: 'blog'
 })
 
-app.get('/api/blog', async (req, res) => {
+Blog.sync()
+
+app.get('/api/blogs', async (req, res) => {
     const blogPosts = await Blog.findAll()
     res.json(blogPosts)
 })
 
-app.post('/api/blog', async (req, res) => {
+app.post('/api/blogs', async (req, res) => {
     try {
         const blog = await Blog.create(req.body)
         res.json(blog)
     } catch (err) {
         return res.status(400).json({ err })
     }
+})
+
+app.get('/api/blogs/:id', async (req, res) => {
+    const blog = await Blog.findByPk(req.params.id)
+    if (blog) {
+        console.log(blog.toJSON())
+        res.json(blog)
+    } else {
+        res.status(404).end()
+    }
+})
+
+app.delete('/api/blogs/:id', async (req, res) => {
+    const deletedBlog = await Blog.destroy({
+        where: {
+            id: req.params.id
+        }
+    })
+    
+    res.json({
+        blogsDeleted: deletedBlog
+    })
 })
 
 const PORT = process.env.PORT || 3001
