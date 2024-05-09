@@ -12,14 +12,18 @@ User.init({
     username: {
         type: DataTypes.TEXT,
         allowNull: false,
-        unique: true
+        unique: true,
+        // only email as username allowed
+        validate: {
+            isEmail: true
+        }
     },
     name: {
         type: DataTypes.TEXT,
         allowNull: false
     },
     passwordHash: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING(64),
         allowNull: false
     }
 }, {
