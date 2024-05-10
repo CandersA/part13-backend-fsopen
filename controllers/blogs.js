@@ -1,4 +1,6 @@
 const router = require('express').Router()
+const { Op } = require("sequelize")
+const sequelize = require('../util/db')
 
 const { Blog } = require('../models')
 const { User } = require('../models')
@@ -11,12 +13,36 @@ const blogFinder = async (req, res, next) => {
 }
 
 router.get('/', async (req, res) => {
+    let where = {}
+
+    if (req.query.search) {
+        const searchQueryCaseInsens = req.query.search.toLowerCase()
+
+        // iLike operator is case insensitive
+        // All operators listed here: https://sequelize.org/docs/v6/core-concepts/model-querying-basics/#operators
+        // Title or author should contain search query
+        where = {
+            [Op.or]: [
+                { title: { 
+                    [Op.iLike]: `%${searchQueryCaseInsens}%` } 
+                }, 
+                { author: { 
+                    [Op.iLike]: `%${searchQueryCaseInsens}%` } 
+                }
+            ]
+        }
+    }
+
     const blogPosts = await Blog.findAll({
         attributes: { exclude: ['userId'] },
         include: {
             model: User,
             attributes: ['name']
-        }
+        },
+        where,
+        order: [
+            ['likes', 'DESC'],
+        ]
     })
     res.json(blogPosts)
 })
